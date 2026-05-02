@@ -275,230 +275,133 @@
       .voice{display:none}
     }
   
-    /* MOBILE-FIRST UPGRADE */
-    @media (max-width:760px){
-      html,body{
-        width:100%;
-        overflow-x:hidden;
-        -webkit-text-size-adjust:100%;
-      }
-      .app{
-        padding:6px;
-        min-height:100svh;
-      }
-      .shell{
-        gap:7px;
-      }
-      header{
-        position:relative;
-        padding:9px 10px;
-        border-radius:16px;
-        gap:6px;
-      }
-      h1{
-        font-size:clamp(1.12rem,6vw,1.55rem);
-        line-height:1;
-      }
-      .subtitle{
-        font-size:.78rem;
-        line-height:1.2;
-      }
-      .pill{
-        padding:6px 9px;
-        font-size:.78rem;
-      }
+/* TRUE NO-SCROLL MOBILE PLAY MODE */
+@media (max-width:760px){
+  body.playing{height:100svh; overflow:hidden;}
+  body.playing .app{height:100svh; min-height:100svh; padding:4px; overflow:hidden;}
+  body.playing .shell{height:100%; display:flex; flex-direction:column; gap:4px; overflow:hidden;}
+  body.playing header{display:none;}
 
-      .intro h2{
-        font-size:clamp(1.7rem,9vw,2.35rem);
-      }
-      .intro p{
-        font-size:.98rem;
-      }
+  body.playing #game.active{
+    height:100%;
+    min-height:0;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+    gap:4px;
+    overflow:hidden;
+  }
 
-      .btn,.primary,.secondary{
-        min-height:48px;
-      }
+  body.playing .stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:4px;
+    overflow:visible;
+    padding:0;
+  }
+  body.playing .stat{min-width:0; padding:5px 3px; border-radius:10px; text-align:center;}
+  body.playing .stat b{font-size:.78rem; line-height:1;}
+  body.playing .stat span{font-size:.52rem; margin-top:1px;}
 
-      .stats{
-        grid-template-columns:repeat(5, minmax(72px, 1fr));
-        overflow-x:auto;
-        padding-bottom:2px;
-        -webkit-overflow-scrolling:touch;
-        scrollbar-width:none;
-      }
-      .stats::-webkit-scrollbar{display:none}
-      .stat{
-        min-width:72px;
-        padding:7px;
-      }
-      .stat b{
-        font-size:.92rem;
-      }
-      .stat span{
-        font-size:.66rem;
-      }
+  body.playing .game{
+    height:100%;
+    min-height:0;
+    display:grid;
+    grid-template-columns:1fr;
+    grid-template-rows:auto minmax(0,1fr);
+    gap:4px;
+    overflow:hidden;
+  }
 
-      .side{
-        gap:7px;
-      }
-      .instruction{
-        padding:10px;
-        border-radius:18px;
-      }
-      .instruction .kicker{
-        font-size:.72rem;
-      }
-      .instruction .target{
-        font-size:clamp(2.25rem,17vw,3.8rem);
-        margin:2px 0;
-      }
-      .instruction .clue{
-        font-size:.95rem;
-      }
-      .cue{
-        padding:7px;
-        font-size:.82rem;
-      }
-      .simplePanel{
-        padding:9px;
-      }
-      .simplePanel h3{
-        font-size:.95rem;
-      }
-      .simplePanel p{
-        font-size:.84rem;
-      }
+  body.playing .side{
+    order:-1;
+    position:static;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:4px;
+    min-height:0;
+  }
 
-      .pitch{
-        width:min(96vw,430px);
-        min-height:0;
-        height:min(69svh, calc(96vw * 1.555));
-        max-height:640px;
-        aspect-ratio:9/14;
-        margin:0 auto;
-      }
+  body.playing .instruction{padding:5px 7px; border-radius:12px; border-width:1px;}
+  body.playing .instruction .kicker{font-size:.56rem; line-height:1;}
+  body.playing .instruction .target{font-size:clamp(1.75rem,12vw,2.65rem); line-height:.86; margin:1px 0;}
+  body.playing .instruction .clue{font-size:.72rem; line-height:1;}
+  body.playing .miniCue{grid-template-columns:1fr 1fr; gap:4px; margin-top:4px;}
+  body.playing .cue{padding:4px 5px; border-radius:9px; font-size:.62rem; line-height:1;}
 
-      .player{
-        width:clamp(46px, 13.5vw, 58px);
-        min-height:74px;
-      }
-      .player.main{
-        width:clamp(52px, 15vw, 64px);
-      }
-      .head{
-        width:25px;
-        height:22px;
-      }
-      .body{
-        width:37px;
-        height:41px;
-        border-width:2px;
-      }
-      .main .body{
-        width:43px;
-        height:47px;
-      }
-      .body:before,.body:after{
-        width:8px;
-        height:23px;
-        top:6px;
-        border-width:2px;
-      }
-      .body:before{left:-9px}
-      .body:after{right:-9px}
-      .long .body:before,.long .body:after,
-      .one .body:after{
-        height:31px;
-      }
-      .num{
-        font-size:.96rem;
-      }
-      .main .num{
-        font-size:1.08rem;
-      }
-      .leg{
-        width:7px;
-        height:15px;
-      }
-      .boot{
-        width:13px;
-        height:7px;
-      }
-      .tag{
-        font-size:.58rem;
-        padding:2px 5px;
-      }
-      .voice{
-        top:-21px;
-        padding:3px 6px;
-        font-size:.56rem;
-      }
-      .ball{
-        width:15px;
-      }
+  body.playing .simplePanel{padding:5px 7px; border-radius:11px;}
+  body.playing .simplePanel .label{margin:0 0 4px !important; font-size:.72rem;}
+  body.playing .pressure{height:8px;}
 
-      .result{
-        padding:10px;
-        border-radius:16px;
-      }
-      .result h3{
-        font-size:.98rem;
-      }
-      .result p{
-        font-size:.86rem;
-      }
-    }
+  body.playing .result{padding:5px 7px; border-radius:11px;}
+  body.playing .result h3{font-size:.75rem; margin:0;}
+  body.playing .result p{display:none;}
 
-    @media (max-width:420px){
-      .subtitle{display:none}
-      header{
-        flex-direction:row;
-        align-items:center;
-      }
-      .positions{
-        grid-template-columns:repeat(2,1fr);
-      }
-      .pitch{
-        width:96vw;
-        height:min(67svh, calc(96vw * 1.555));
-      }
-      .miniCue{
-        grid-template-columns:1fr 1fr;
-      }
-      .simplePanel:nth-of-type(3){
-        display:none;
-      }
-      .player{
-        width:clamp(42px, 12.5vw, 52px);
-        min-height:68px;
-      }
-      .player.main{
-        width:clamp(48px, 14vw, 58px);
-      }
-      .voice{
-        display:none;
-      }
-      .tag{
-        font-size:.55rem;
-      }
-    }
+  body.playing .simplePanel:nth-of-type(3),
+  body.playing .sideActions{display:none;}
 
-    @media (max-width:340px){
-      .miniCue{
-        grid-template-columns:1fr;
-      }
-      .stats{
-        grid-template-columns:repeat(5, 68px);
-      }
-      .stat{
-        min-width:68px;
-      }
-      .pitch{
-        height:64svh;
-      }
-    }
+  body.playing .pitchBox{
+    min-height:0;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+  }
 
-  </style>
+  body.playing .pitch{
+    width:min(96vw, calc((100svh - 128px) * .642857));
+    height:min(calc(100svh - 128px), calc(96vw * 1.555));
+    min-height:0;
+    max-height:none;
+    aspect-ratio:9/14;
+    border-width:3px;
+    border-radius:16px;
+    margin:0 auto;
+  }
+
+  body.playing .pitch:before{inset:8px; border-width:1px; border-radius:12px;}
+  body.playing .box, body.playing .six, body.playing .circle{border-width:1px;}
+  body.playing .box.top, body.playing .six.top{top:8px;}
+  body.playing .box.bottom, body.playing .six.bottom{bottom:8px;}
+  body.playing .half, body.playing .lane{height:2px;}
+  body.playing .goal{height:6px;}
+
+  body.playing .player{width:clamp(36px,10vw,47px); min-height:58px;}
+  body.playing .player.main{width:clamp(42px,11.5vw,54px);}
+  body.playing .head{width:20px; height:18px; border-width:1px; margin-bottom:-3px;}
+  body.playing .body{width:31px; height:34px; border-width:2px; border-radius:10px 10px 12px 12px;}
+  body.playing .main .body{width:36px; height:39px;}
+  body.playing .body:before, body.playing .body:after{width:6px; height:19px; top:5px; border-width:1px;}
+  body.playing .body:before{left:-7px}
+  body.playing .body:after{right:-7px}
+  body.playing .long .body:before,
+  body.playing .long .body:after,
+  body.playing .one .body:after{height:25px;}
+
+  body.playing .crest{width:7px; height:7px; top:4px; right:4px;}
+  body.playing .num{font-size:.78rem;}
+  body.playing .main .num{font-size:.88rem;}
+  body.playing .legs{gap:5px;}
+  body.playing .leg{width:5px; height:12px;}
+  body.playing .boots{gap:3px;}
+  body.playing .boot{width:10px; height:5px;}
+  body.playing .tag{font-size:.46rem; padding:1px 4px; margin-top:1px;}
+  body.playing .voice{display:none;}
+  body.playing .ball{width:12px;}
+}
+
+@media (max-width:390px){
+  body.playing .pitch{
+    width:min(97vw, calc((100svh - 116px) * .642857));
+    height:min(calc(100svh - 116px), calc(97vw * 1.555));
+  }
+  body.playing .instruction .target{font-size:clamp(1.55rem,11vw,2.25rem);}
+  body.playing .miniCue{display:none;}
+  body.playing .stat b{font-size:.72rem;}
+  body.playing .stat span{font-size:.48rem;}
+}
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -708,6 +611,7 @@ function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
 
 function show(screen){
   ["start","game","end"].forEach(id => $(id).classList.toggle("active", id===screen));
+  document.body.classList.toggle("playing", screen === "game");
 }
 
 function best(){
