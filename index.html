@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Number 12: Spot The Real Teammate</title>
+  <style>
+    :root{
+      --bg:#06110b;
+      --panel:#102719;
+      --panel2:#173a24;
+      --text:#f5fff7;
+      --muted:#b7d2bf;
+      --gold:#ffd166;
+      --good:#72f59a;
+      --bad:#ff6b6b;
+      --line:rgba(255,255,255,.74);
+      --radius:22px;
+      --pitchW:min(96vw,560px);
+      --player:clamp(58px, 11vw, 76px);
+      --main:clamp(64px, 12vw, 84px);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0; min-height:100%; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+    body{overflow-x:hidden}
+    button{font:inherit; color:inherit; border:0; cursor:pointer; touch-action:manipulation}
+    .app{min-height:100dvh; display:flex; justify-content:center; padding:10px; padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    .shell{width:min(1120px,100%); display:grid; gap:10px}
+    .screen{display:none}
+    .screen.active{display:block}
+    .card{
+      background:linear-gradient(180deg,rgba(20,51,31,.98),rgba(8,24,14,.98));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--radius);
+      box-shadow:0 18px 48px rgba(0,0,0,.34);
+      overflow:hidden;
+    }
+
+    header{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding:10px 12px;
+      background:linear-gradient(135deg,#14331f,#081c10);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.1);
+    }
+    h1{font-size:clamp(1.35rem,3.2vw,2.25rem); line-height:.95; margin:0; letter-spacing:-.05em}
+    .subtitle{margin:3px 0 0; color:#c8e6cf; font-size:.9rem}
+    .pill{padding:8px 10px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); font-weight:1000; white-space:nowrap}
+
+    .hero{display:grid; grid-template-columns:1.05fr .95fr; gap:10px}
+    .intro{padding:18px}
+    .intro h2{font-size:clamp(1.9rem,5vw,3.2rem); line-height:.92; margin:0 0 12px; letter-spacing:-.055em}
+    .intro p{font-size:clamp(1rem,2vw,1.15rem); line-height:1.48; color:var(--muted); margin:0 0 12px}
+    .big{font-weight:1000; color:#fff}
+    .setup{padding:14px; display:grid; gap:12px}
+    .label{display:flex; justify-content:space-between; gap:8px; align-items:end; font-weight:1000; margin-bottom:8px}
+    .tiny{font-size:.78rem; color:var(--muted); font-weight:700}
+    .grid{display:grid; gap:7px}
+    .positions{grid-template-columns:repeat(4,1fr)}
+    .three{grid-template-columns:repeat(3,1fr)}
+    .btn{
+      min-height:45px;
+      border-radius:15px;
+      padding:9px 8px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.13);
+      font-weight:1000;
+    }
+    .btn.active{background:rgba(255,209,102,.18); border-color:rgba(255,209,102,.8)}
+    .primary{
+      min-height:56px;
+      border-radius:18px;
+      background:linear-gradient(135deg,#ffd166,#ff9f1c);
+      color:#1e1300;
+      font-weight:1000;
+      font-size:1.05rem;
+      box-shadow:0 12px 28px rgba(255,159,28,.18)
+    }
+    .secondary{
+      min-height:44px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.13);
+      font-weight:1000;
+    }
+
+    .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:7px}
+    .stat{padding:8px 9px; border-radius:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1)}
+    .stat b{display:block; font-size:1rem; line-height:1}
+    .stat span{display:block; margin-top:3px; color:var(--muted); font-size:.72rem}
+
+    .game{display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:10px; align-items:start}
+    .pitchBox{display:grid; justify-content:center}
+    .side{display:grid; gap:9px; position:sticky; top:10px}
+    .instruction{
+      padding:12px;
+      background:linear-gradient(180deg,rgba(255,209,102,.20),rgba(255,209,102,.08));
+      border:2px solid rgba(255,209,102,.72);
+      border-radius:20px;
+      text-align:center;
+    }
+    .instruction .kicker{color:#fff6cf; font-weight:900; font-size:.82rem; text-transform:uppercase; letter-spacing:.06em}
+    .instruction .target{font-size:clamp(2.2rem,7vw,4.2rem); line-height:.92; font-weight:1000; letter-spacing:-.07em; margin:4px 0}
+    .instruction .clue{font-size:1rem; color:#fff; font-weight:900}
+    .miniCue{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:9px}
+    .cue{padding:8px; border-radius:14px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14); font-size:.88rem; font-weight:1000}
+    .pressure{height:12px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; border:1px solid rgba(255,255,255,.12)}
+    .pressure i{display:block; width:100%; height:100%; background:linear-gradient(90deg,#72f59a,#ffd166,#ff6b6b); transform-origin:left center}
+    .simplePanel{padding:10px; border-radius:18px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1)}
+    .simplePanel h3{margin:0 0 6px; font-size:1rem}
+    .simplePanel p{margin:0; color:#d8f4df; line-height:1.35; font-size:.9rem}
+    .result{display:none; padding:12px; border-radius:18px; border:1px solid rgba(255,255,255,.12)}
+    .result.show{display:block}
+    .result.good{background:rgba(114,245,154,.12); border-color:rgba(114,245,154,.55)}
+    .result.bad{background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.55)}
+    .result.warn{background:rgba(255,209,102,.12); border-color:rgba(255,209,102,.55)}
+    .result h3{margin:0 0 5px; font-size:1.05rem}
+    .result p{margin:0; line-height:1.35; color:#f3fff6}
+    .sideActions{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+
+    .pitch{
+      position:relative;
+      width:var(--pitchW);
+      aspect-ratio:9/14;
+      min-height:570px;
+      max-height:calc(100dvh - 172px);
+      border-radius:24px;
+      overflow:hidden;
+      background:
+        linear-gradient(90deg,rgba(255,255,255,.052) 50%,rgba(255,255,255,.02) 50%) 0 0/25% 100%,
+        repeating-linear-gradient(0deg,#186e36 0 8.33%,#12602f 8.33% 16.66%);
+      border:5px solid rgba(245,255,247,.82);
+      box-shadow:0 24px 68px rgba(0,0,0,.42);
+      user-select:none;
+    }
+    .pitch:before{content:""; position:absolute; inset:12px; border:2px solid var(--line); border-radius:17px}
+    .half{position:absolute; left:12px; right:12px; top:50%; height:2px; background:var(--line)}
+    .circle{position:absolute; left:50%; top:50%; width:26%; aspect-ratio:1; border:2px solid var(--line); border-radius:50%; transform:translate(-50%,-50%)}
+    .spot{position:absolute; left:50%; top:50%; width:7px; aspect-ratio:1; background:rgba(255,255,255,.78); border-radius:50%; transform:translate(-50%,-50%)}
+    .box{position:absolute; left:24%; width:52%; height:15%; border:2px solid var(--line)}
+    .box.top{top:12px; border-top:0}
+    .box.bottom{bottom:12px; border-bottom:0}
+    .six{position:absolute; left:36%; width:28%; height:7%; border:2px solid rgba(255,255,255,.65)}
+    .six.top{top:12px; border-top:0}
+    .six.bottom{bottom:12px; border-bottom:0}
+    .goal{position:absolute; left:39%; width:22%; height:9px; background:#f4fff7}
+    .goal.top{top:0; border-radius:0 0 10px 10px}
+    .goal.bottom{bottom:0; border-radius:10px 10px 0 0}
+
+    .lane{position:absolute; height:3px; background:rgba(255,255,255,.24); transform-origin:left center; border-radius:999px; pointer-events:none; z-index:2}
+    .lane.gold{background:rgba(255,209,102,.74); box-shadow:0 0 18px rgba(255,209,102,.35)}
+    .ball{
+      position:absolute; width:18px; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 35% 35%,#fff 0 20%,#111 21% 27%,#fff 28% 50%,#111 51% 57%,#fff 58%);
+      border:1px solid #111;
+      transform:translate(-50%,-50%);
+      z-index:20;
+      box-shadow:0 5px 12px rgba(0,0,0,.35);
+      pointer-events:none
+    }
+
+    .player{
+      position:absolute;
+      width:var(--player);
+      min-height:86px;
+      transform:translate(-50%,-50%);
+      display:grid;
+      justify-items:center;
+      align-content:start;
+      gap:0;
+      background:rgba(0,0,0,.04);
+      border-radius:20px;
+      z-index:12;
+      padding:2px;
+    }
+    .player.main{width:var(--main); z-index:18; pointer-events:none}
+    .player.option{cursor:pointer}
+    .player.option:hover .body{transform:translateY(-3px) scale(1.04)}
+    .player.option:focus-visible{outline:4px solid #fff; box-shadow:0 0 0 8px var(--gold)}
+    .voice{
+      position:absolute;
+      left:50%; top:-27px; transform:translateX(-50%);
+      white-space:nowrap;
+      padding:4px 8px;
+      background:#fff;
+      color:#132016;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.14);
+      box-shadow:0 5px 12px rgba(0,0,0,.24);
+      font-size:.66rem;
+      font-weight:1000;
+      z-index:4;
+    }
+    .opponent .voice{display:none}
+    .head{position:relative; width:29px; height:25px; border-radius:50% 50% 45% 45%; background:#8e5c38; border:2px solid rgba(0,0,0,.25); margin-bottom:-4px; z-index:3}
+    .hair-short:before{content:""; position:absolute; left:2px; right:2px; top:-4px; height:9px; border-radius:12px 12px 3px 3px; background:#15100b}
+    .hair-curly:before{content:"●●●"; position:absolute; left:0; right:0; top:-12px; font-size:11px; letter-spacing:-3px; color:#15100b}
+    .hair-band:before{content:""; position:absolute; left:-3px; right:-3px; top:7px; height:4px; background:#fff; border-radius:5px}
+    .hair-top:before{content:""; position:absolute; left:8px; top:-11px; width:12px; height:12px; border-radius:50%; background:#15100b}
+    .hair-shaved:before{content:""; position:absolute; left:3px; right:3px; top:-1px; height:5px; border-radius:12px 12px 3px 3px; background:rgba(20,15,10,.48)}
+    .body{
+      position:relative;
+      display:grid;
+      place-items:center;
+      width:45px; height:49px;
+      border-radius:14px 14px 17px 17px;
+      background:var(--kit);
+      border:3px solid var(--trim);
+      color:#fff;
+      box-shadow:0 9px 18px rgba(0,0,0,.34);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .main .body{width:51px; height:55px}
+    .body:before,.body:after{content:""; position:absolute; top:7px; width:10px; height:28px; border-radius:8px; background:var(--kit); border:2px solid var(--trim)}
+    .body:before{left:-11px; transform:rotate(13deg)}
+    .body:after{right:-11px; transform:rotate(-13deg)}
+    .long .body:before,.long .body:after{height:38px; top:5px}
+    .one .body:after{height:38px; top:5px}
+    .stripe .body{background:repeating-linear-gradient(90deg,var(--kit) 0 10px,var(--kit2) 10px 20px)}
+    .halves .body{background:linear-gradient(90deg,var(--kit) 0 50%,var(--kit2) 50% 100%)}
+    .diag .body{background:linear-gradient(135deg,var(--kit) 0 45%,var(--kit2) 46% 58%,var(--kit) 59%)}
+    .crest{position:absolute; right:5px; top:5px; width:10px; height:10px; border-radius:50%; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+    .opponent .crest{border-radius:2px; transform:rotate(45deg)}
+    .num{font-weight:1000; font-size:1.1rem; text-shadow:0 2px 3px rgba(0,0,0,.55)}
+    .main .num{font-size:1.22rem}
+    .legs{display:flex; gap:7px; margin-top:-1px}
+    .leg{width:8px; height:18px; border-radius:0 0 8px 8px; background:var(--sock); border:1px solid rgba(0,0,0,.25)}
+    .boots{display:flex; gap:5px; margin-top:-2px}
+    .boot{position:relative; width:16px; height:8px; border-radius:50% 50% 7px 7px; background:var(--boot); border:1px solid rgba(0,0,0,.35)}
+    .bootStripes .boot:after{content:""; position:absolute; inset:2px 3px; border-radius:3px; background:repeating-linear-gradient(90deg,#111 0 2px,#fff 2px 4px)}
+    .bootDots .boot:after{content:"••"; position:absolute; top:-3px; left:2px; color:#111; letter-spacing:-1px; font-size:9px}
+    .bootWhite .boot{background:#f2f2f2}
+    .bootDark .boot{background:#141414}
+    .bootSplit .boot{background:linear-gradient(90deg,#f2f2f2 0 50%,#111 50%)}
+    .tag{margin-top:3px; padding:3px 7px; border-radius:999px; background:rgba(0,0,0,.42); color:#fff; border:1px solid rgba(255,255,255,.18); font-size:.66rem; font-weight:1000}
+    .player.disabled{pointer-events:none}
+    .player.correct .body{box-shadow:0 0 0 5px rgba(114,245,154,.95),0 0 28px rgba(114,245,154,.6)}
+    .player.wrong .body{box-shadow:0 0 0 5px rgba(255,107,107,.95),0 0 28px rgba(255,107,107,.6)}
+    .player.safe .body{box-shadow:0 0 0 5px rgba(255,209,102,.95),0 0 28px rgba(255,209,102,.42)}
+
+    .endGrid{display:grid; grid-template-columns:.9fr 1.1fr; gap:12px; padding:14px}
+    .grade{min-height:250px; display:grid; place-items:center; text-align:center; border-radius:22px; border:1px solid rgba(255,255,255,.12); background:radial-gradient(circle at center,rgba(255,209,102,.20),rgba(255,255,255,.05) 60%)}
+    .grade strong{display:block; font-size:clamp(3.2rem,10vw,6rem); line-height:.9}
+    .grade span{display:block; color:var(--muted); font-weight:1000}
+    .feedback{display:grid; gap:9px}
+    .fb{padding:11px; border-radius:16px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1)}
+    .fb b{display:block; margin-bottom:4px}
+    .fb span{display:block; color:var(--muted); line-height:1.35}
+
+    @media (max-width:900px){
+      .hero,.game,.endGrid{grid-template-columns:1fr}
+      .side{position:static; order:-1}
+      .stats{grid-template-columns:repeat(3,1fr)}
+      .pitch{max-height:none}
+      .positions{grid-template-columns:repeat(3,1fr)}
+      header{align-items:flex-start; flex-direction:column}
+    }
+    @media (max-width:560px){
+      .app{padding:7px}
+      .intro,.setup{padding:12px}
+      .positions{grid-template-columns:repeat(2,1fr)}
+      .three,.miniCue{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .pitch{width:96vw; min-height:560px; border-width:4px; border-radius:20px}
+      .player{--player:54px; min-height:82px}
+      .player.main{--main:62px}
+      .body{width:40px; height:44px}
+      .body:before,.body:after{width:9px; height:25px}
+      .voice{font-size:.6rem; top:-23px}
+      .sideActions{grid-template-columns:1fr}
+    }
+    @media (max-width:380px){
+      .pitch{min-height:520px}
+      .voice{display:none}
+    }
+  
+    /* MOBILE-FIRST UPGRADE */
+    @media (max-width:760px){
+      html,body{
+        width:100%;
+        overflow-x:hidden;
+        -webkit-text-size-adjust:100%;
+      }
+      .app{
+        padding:6px;
+        min-height:100svh;
+      }
+      .shell{
+        gap:7px;
+      }
+      header{
+        position:relative;
+        padding:9px 10px;
+        border-radius:16px;
+        gap:6px;
+      }
+      h1{
+        font-size:clamp(1.12rem,6vw,1.55rem);
+        line-height:1;
+      }
+      .subtitle{
+        font-size:.78rem;
+        line-height:1.2;
+      }
+      .pill{
+        padding:6px 9px;
+        font-size:.78rem;
+      }
+
+      .intro h2{
+        font-size:clamp(1.7rem,9vw,2.35rem);
+      }
+      .intro p{
+        font-size:.98rem;
+      }
+
+      .btn,.primary,.secondary{
+        min-height:48px;
+      }
+
+      .stats{
+        grid-template-columns:repeat(5, minmax(72px, 1fr));
+        overflow-x:auto;
+        padding-bottom:2px;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+      }
+      .stats::-webkit-scrollbar{display:none}
+      .stat{
+        min-width:72px;
+        padding:7px;
+      }
+      .stat b{
+        font-size:.92rem;
+      }
+      .stat span{
+        font-size:.66rem;
+      }
+
+      .side{
+        gap:7px;
+      }
+      .instruction{
+        padding:10px;
+        border-radius:18px;
+      }
+      .instruction .kicker{
+        font-size:.72rem;
+      }
+      .instruction .target{
+        font-size:clamp(2.25rem,17vw,3.8rem);
+        margin:2px 0;
+      }
+      .instruction .clue{
+        font-size:.95rem;
+      }
+      .cue{
+        padding:7px;
+        font-size:.82rem;
+      }
+      .simplePanel{
+        padding:9px;
+      }
+      .simplePanel h3{
+        font-size:.95rem;
+      }
+      .simplePanel p{
+        font-size:.84rem;
+      }
+
+      .pitch{
+        width:min(96vw,430px);
+        min-height:0;
+        height:min(69svh, calc(96vw * 1.555));
+        max-height:640px;
+        aspect-ratio:9/14;
+        margin:0 auto;
+      }
+
+      .player{
+        width:clamp(46px, 13.5vw, 58px);
+        min-height:74px;
+      }
+      .player.main{
+        width:clamp(52px, 15vw, 64px);
+      }
+      .head{
+        width:25px;
+        height:22px;
+      }
+      .body{
+        width:37px;
+        height:41px;
+        border-width:2px;
+      }
+      .main .body{
+        width:43px;
+        height:47px;
+      }
+      .body:before,.body:after{
+        width:8px;
+        height:23px;
+        top:6px;
+        border-width:2px;
+      }
+      .body:before{left:-9px}
+      .body:after{right:-9px}
+      .long .body:before,.long .body:after,
+      .one .body:after{
+        height:31px;
+      }
+      .num{
+        font-size:.96rem;
+      }
+      .main .num{
+        font-size:1.08rem;
+      }
+      .leg{
+        width:7px;
+        height:15px;
+      }
+      .boot{
+        width:13px;
+        height:7px;
+      }
+      .tag{
+        font-size:.58rem;
+        padding:2px 5px;
+      }
+      .voice{
+        top:-21px;
+        padding:3px 6px;
+        font-size:.56rem;
+      }
+      .ball{
+        width:15px;
+      }
+
+      .result{
+        padding:10px;
+        border-radius:16px;
+      }
+      .result h3{
+        font-size:.98rem;
+      }
+      .result p{
+        font-size:.86rem;
+      }
+    }
+
+    @media (max-width:420px){
+      .subtitle{display:none}
+      header{
+        flex-direction:row;
+        align-items:center;
+      }
+      .positions{
+        grid-template-columns:repeat(2,1fr);
+      }
+      .pitch{
+        width:96vw;
+        height:min(67svh, calc(96vw * 1.555));
+      }
+      .miniCue{
+        grid-template-columns:1fr 1fr;
+      }
+      .simplePanel:nth-of-type(3){
+        display:none;
+      }
+      .player{
+        width:clamp(42px, 12.5vw, 52px);
+        min-height:68px;
+      }
+      .player.main{
+        width:clamp(48px, 14vw, 58px);
+      }
+      .voice{
+        display:none;
+      }
+      .tag{
+        font-size:.55rem;
+      }
+    }
+
+    @media (max-width:340px){
+      .miniCue{
+        grid-template-columns:1fr;
+      }
+      .stats{
+        grid-template-columns:repeat(5, 68px);
+      }
+      .stat{
+        min-width:68px;
+      }
+      .pitch{
+        height:64svh;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Number 12: Spot The Real Teammate</h1>
+        <p class="subtitle">Look once. Read the cue. Pass fast.</p>
+      </div>
+      <div class="pill" id="bestPill">Best: 0</div>
+    </header>
+
+    <section id="start" class="screen active">
+      <div class="hero">
+        <div class="card intro">
+          <h2>One glance. One pass. Do not get tricked by kit colour.</h2>
+          <p>Number 12 starts in a real football position. The other team wears a similar kit.</p>
+          <p class="big">Your instruction is always simple: PASS TO #NUMBER.</p>
+          <p>Rounds start with 1 player, then 2 players, then 3 players, and keep adding more pressure.</p>
+        </div>
+
+        <div class="card setup">
+          <div>
+            <div class="label"><span>Choose position</span><span class="tiny">where Number 12 starts</span></div>
+            <div id="positionGrid" class="grid positions"></div>
+          </div>
+          <div>
+            <div class="label"><span>Choose kit clash</span><span class="tiny">similar colours</span></div>
+            <div id="clashGrid" class="grid three"></div>
+          </div>
+          <div>
+            <div class="label"><span>Choose speed</span><span class="tiny">timer pressure</span></div>
+            <div id="modeGrid" class="grid three"></div>
+          </div>
+          <button id="startBtn" class="primary">Start game</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="screen">
+      <div class="stats">
+        <div class="stat"><b id="levelTxt">1 / 12</b><span>Level</span></div>
+        <div class="stat"><b id="playersTxt">1</b><span>Players</span></div>
+        <div class="stat"><b id="scoreTxt">0</b><span>Score</span></div>
+        <div class="stat"><b id="accTxt">100%</b><span>Accuracy</span></div>
+        <div class="stat"><b id="posTxt">LB</b><span>Position</span></div>
+      </div>
+
+      <div class="game">
+        <div class="pitchBox">
+          <div id="pitch" class="pitch card" aria-label="Football pitch">
+            <div class="half"></div>
+            <div class="circle"></div>
+            <div class="spot"></div>
+            <div class="box top"></div>
+            <div class="box bottom"></div>
+            <div class="six top"></div>
+            <div class="six bottom"></div>
+            <div class="goal top"></div>
+            <div class="goal bottom"></div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="instruction">
+            <div class="kicker" id="smallInstruction">PASS TO</div>
+            <div class="target" id="bigInstruction">#11</div>
+            <div class="clue" id="simpleClue">LW • WIDE!</div>
+            <div class="miniCue">
+              <div class="cue" id="cueOne">Striped boots</div>
+              <div class="cue" id="cueTwo">Round crest</div>
+            </div>
+          </div>
+
+          <div class="simplePanel">
+            <div class="label" style="margin:0 0 7px"><span>Time</span><span id="timeTxt">6.0s</span></div>
+            <div class="pressure"><i id="pressureFill"></i></div>
+          </div>
+
+          <div id="result" class="result" aria-live="polite"></div>
+
+          <div class="simplePanel">
+            <h3>3-second rule</h3>
+            <p>1. Find the number.<br>2. Check the position or voice.<br>3. Ignore similar kit colour.</p>
+          </div>
+
+          <div class="sideActions">
+            <button id="skipBtn" class="secondary">Skip</button>
+            <button id="quitBtn" class="secondary">Finish</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="end" class="screen">
+      <div class="card endGrid">
+        <div class="grade">
+          <div>
+            <strong id="gradeTxt">A</strong>
+            <span id="summaryTxt">Great cue reading</span>
+          </div>
+        </div>
+        <div>
+          <h2 style="margin:0 0 10px">Feedback</h2>
+          <div id="feedback" class="feedback"></div>
+          <div class="sideActions" style="margin-top:12px">
+            <button id="againBtn" class="primary">Play again</button>
+            <button id="setupBtn" class="secondary">Change setup</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const positions = [
+  {id:"GK", name:"Goalkeeper", x:50, y:88},
+  {id:"RB", name:"Right Back", x:78, y:72},
+  {id:"RCB", name:"Right Centre Back", x:58, y:76},
+  {id:"LCB", name:"Left Centre Back", x:42, y:76},
+  {id:"LB", name:"Left Back", x:22, y:72},
+  {id:"CDM", name:"Defensive Mid", x:50, y:62},
+  {id:"CM", name:"Centre Mid", x:50, y:52},
+  {id:"CAM", name:"Attacking Mid", x:50, y:40},
+  {id:"RW", name:"Right Wing", x:78, y:35},
+  {id:"LW", name:"Left Wing", x:22, y:35},
+  {id:"ST", name:"Striker", x:50, y:23}
+];
+
+const passMap = {
+  GK:["LCB","RCB","LB","RB","CDM"],
+  RB:["RCB","CDM","CM","RW"],
+  RCB:["GK","RB","LCB","CDM","CM"],
+  LCB:["GK","LB","RCB","CDM","CM"],
+  LB:["LCB","CDM","CM","LW"],
+  CDM:["LCB","RCB","LB","RB","CM","CAM"],
+  CM:["CDM","CAM","LW","RW","ST"],
+  CAM:["CM","LW","RW","ST"],
+  RW:["RB","CM","CAM","ST"],
+  LW:["LB","CM","CAM","ST"],
+  ST:["CAM","LW","RW","CM"]
+};
+
+const details = {
+  GK:{num:1, call:"KEEPER!", hair:"hair-shaved", sleeve:"long", boots:"bootDark", cue:"dark boots"},
+  RB:{num:2, call:"LINE!", hair:"hair-short", sleeve:"one", boots:"bootStripes", cue:"striped boots"},
+  RCB:{num:4, call:"RIGHT!", hair:"hair-shaved", sleeve:"long", boots:"bootDots", cue:"dotted boots"},
+  LCB:{num:5, call:"LEFT!", hair:"hair-band", sleeve:"long", boots:"bootWhite", cue:"white headband"},
+  LB:{num:3, call:"BACK!", hair:"hair-curly", sleeve:"one", boots:"bootSplit", cue:"curly hair"},
+  CDM:{num:6, call:"HOLD!", hair:"hair-short", sleeve:"long", boots:"bootWhite", cue:"white boots"},
+  CM:{num:8, call:"TURN!", hair:"hair-top", sleeve:"", boots:"bootStripes", cue:"top knot"},
+  CAM:{num:10, call:"POCKET!", hair:"hair-band", sleeve:"one", boots:"bootDots", cue:"headband"},
+  RW:{num:7, call:"SWITCH!", hair:"hair-short", sleeve:"", boots:"bootSplit", cue:"split boots"},
+  LW:{num:11, call:"WIDE!", hair:"hair-curly", sleeve:"", boots:"bootStripes", cue:"striped boots"},
+  ST:{num:9, call:"FEET!", hair:"hair-top", sleeve:"long", boots:"bootDark", cue:"top knot"}
+};
+
+const clashes = {
+  redGreen:{
+    label:"Red / Green",
+    team:{kit:"#b13a32", kit2:"#7c2720", trim:"#f8e8df", sock:"#591b16"},
+    opp:{kit:"#557f48", kit2:"#3e6338", trim:"#eaffdf", sock:"#314b2b"}
+  },
+  bluePurple:{
+    label:"Blue / Purple",
+    team:{kit:"#3158a8", kit2:"#203d78", trim:"#e9f0ff", sock:"#182d57"},
+    opp:{kit:"#604aa2", kit2:"#49317c", trim:"#f2eaff", sock:"#342458"}
+  },
+  lightDark:{
+    label:"Light / Dark",
+    team:{kit:"#e9e5c4", kit2:"#d4cf9a", trim:"#303030", sock:"#f4f0d2"},
+    opp:{kit:"#42474a", kit2:"#2f3538", trim:"#efefef", sock:"#22282b"}
+  }
+};
+
+const modes = {
+  easy:{label:"Easy", seconds:8, levels:10},
+  match:{label:"Match", seconds:6, levels:12},
+  fast:{label:"Fast", seconds:4.5, levels:14}
+};
+
+const state = {
+  position:"LB",
+  clash:"redGreen",
+  mode:"match",
+  level:0,
+  score:0,
+  correct:0,
+  attempts:0,
+  turnovers:0,
+  safeWrong:0,
+  timeouts:0,
+  locked:false,
+  timer:null,
+  deadline:0,
+  current:null
+};
+
+function pos(id){ return positions.find(p=>p.id===id); }
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+
+function show(screen){
+  ["start","game","end"].forEach(id => $(id).classList.toggle("active", id===screen));
+}
+
+function best(){
+  const b = Number(localStorage.getItem("n12_simple_best") || 0);
+  $("bestPill").textContent = "Best: " + b;
+}
+
+function renderSetup(){
+  $("positionGrid").innerHTML = positions.map(p=>`
+    <button class="btn ${state.position===p.id?"active":""}" data-pos="${p.id}">
+      ${p.id}<br><span class="tiny">${p.name}</span>
+    </button>
+  `).join("");
+
+  $("clashGrid").innerHTML = Object.entries(clashes).map(([id,c])=>`
+    <button class="btn ${state.clash===id?"active":""}" data-clash="${id}">${c.label}</button>
+  `).join("");
+
+  $("modeGrid").innerHTML = Object.entries(modes).map(([id,m])=>`
+    <button class="btn ${state.mode===id?"active":""}" data-mode="${id}">
+      ${m.label}<br><span class="tiny">${m.seconds}s</span>
+    </button>
+  `).join("");
+
+  document.querySelectorAll("[data-pos]").forEach(b=>b.onclick=()=>{state.position=b.dataset.pos; renderSetup()});
+  document.querySelectorAll("[data-clash]").forEach(b=>b.onclick=()=>{state.clash=b.dataset.clash; renderSetup()});
+  document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode; renderSetup()});
+}
+
+function reset(){
+  clearInterval(state.timer);
+  Object.assign(state,{level:0,score:0,correct:0,attempts:0,turnovers:0,safeWrong:0,timeouts:0,locked:false,current:null});
+}
+
+function startGame(){
+  reset();
+  show("game");
+  nextLevel();
+}
+
+function clearPitch(){
+  $("pitch").querySelectorAll(".player,.ball,.lane").forEach(e=>e.remove());
+}
+
+function line(from,to,gold=false){
+  const dx=to.x-from.x, dy=to.y-from.y;
+  const len=Math.hypot(dx,dy);
+  const ang=Math.atan2(dy,dx)*180/Math.PI;
+  const e=document.createElement("div");
+  e.className="lane" + (gold ? " gold" : "");
+  e.style.left=from.x+"%";
+  e.style.top=from.y+"%";
+  e.style.width=len+"%";
+  e.style.transform=`rotate(${ang}deg)`;
+  $("pitch").appendChild(e);
+}
+
+function ball(at){
+  const e=document.createElement("div");
+  e.className="ball";
+  e.style.left=(at.x+3)+"%";
+  e.style.top=(at.y+2)+"%";
+  $("pitch").appendChild(e);
+}
+
+function player(data){
+  const e=document.createElement("button");
+  e.className=`player ${data.main?"main":"option"} ${data.team?"team":"opponent"} ${data.pattern||""} ${data.sleeve||""} ${data.boots||""}`;
+  e.style.left=data.x+"%";
+  e.style.top=data.y+"%";
+  e.style.setProperty("--kit", data.kit);
+  e.style.setProperty("--kit2", data.kit2||data.kit);
+  e.style.setProperty("--trim", data.trim);
+  e.style.setProperty("--sock", data.sock);
+  e.style.setProperty("--boot", data.bootColor || "#111");
+  e.setAttribute("aria-label", `${data.team?"Teammate":"Opponent"} number ${data.num} ${data.position}`);
+  if(!data.main){
+    e.dataset.id=data.choiceId;
+    e.onclick=()=>choose(data.choiceId);
+  } else {
+    e.tabIndex=-1;
+  }
+  e.innerHTML=`
+    <span class="voice">${data.call||""}</span>
+    <span class="head ${data.hair||"hair-short"}"></span>
+    <span class="body"><span class="crest"></span><span class="num">${data.num}</span></span>
+    <span class="legs"><i class="leg"></i><i class="leg"></i></span>
+    <span class="boots"><i class="boot"></i><i class="boot"></i></span>
+    <span class="tag">${data.position}</span>
+  `;
+  $("pitch").appendChild(e);
+  return e;
+}
+
+function place(base, used, jitter=8){
+  for(let i=0;i<80;i++){
+    const p = {x:clamp(base.x + rand(-jitter,jitter), 10, 90), y:clamp(base.y + rand(-jitter,jitter), 9, 91)};
+    if(used.every(u=>dist(p,u)>13)) return p;
+  }
+  return {x:clamp(base.x + rand(-12,12), 10, 90), y:clamp(base.y + rand(-12,12), 9, 91)};
+}
+
+function playerCountForLevel(level){
+  return Math.min(8, level);
+}
+
+function makeScenario(){
+  const main = pos(state.position);
+  const valid = shuffle(passMap[state.position]);
+  const targetId = valid[0];
+  const targetBase = pos(targetId);
+  const clash = clashes[state.clash];
+  const totalPlayers = playerCountForLevel(state.level);
+
+  const used = [main];
+  const targetPlace = place(targetBase, used, 4);
+  used.push(targetPlace);
+
+  const target = {
+    choiceId:"target",
+    team:true,
+    target:true,
+    position:targetId,
+    x:targetPlace.x,
+    y:targetPlace.y,
+    ...details[targetId],
+    kit:clash.team.kit,
+    kit2:clash.team.kit2,
+    trim:clash.team.trim,
+    sock:clash.team.sock,
+    pattern:"stripe",
+    bootColor:"#f2f2f2"
+  };
+
+  const choices = [target];
+  const otherTeam = valid.slice(1);
+  let nextTeamIndex = 0;
+  const oppNums = shuffle([2,3,4,5,6,7,8,9,10,11,14,15,16,17]);
+  const allOtherPositions = shuffle(positions.map(p=>p.id).filter(id=>id!==state.position && id!==targetId));
+
+  for(let i=1;i<totalPlayers;i++){
+    const makeTeam = i >= 2 && i % 3 === 0 && otherTeam[nextTeamIndex];
+    if(makeTeam){
+      const id = otherTeam[nextTeamIndex++];
+      const base = pos(id);
+      const pt = place(base, used, 5);
+      used.push(pt);
+      choices.push({
+        choiceId:"team_"+id+"_"+i,
+        team:true,
+        target:false,
+        position:id,
+        x:pt.x,
+        y:pt.y,
+        ...details[id],
+        kit:clash.team.kit,
+        kit2:clash.team.kit2,
+        trim:clash.team.trim,
+        sock:clash.team.sock,
+        pattern:["halves","diag","stripe"][i%3],
+        bootColor:i%2 ? "#111" : "#f2f2f2"
+      });
+    } else {
+      const nearTarget = i===1;
+      const base = nearTarget ? {x:target.x + rand(-7,7), y:target.y + rand(-7,7)} : pos(allOtherPositions[i % allOtherPositions.length]);
+      const pt = place(base, used, nearTarget?5:8);
+      used.push(pt);
+      choices.push({
+        choiceId:"opp_"+i,
+        team:false,
+        target:false,
+        position:allOtherPositions[i % allOtherPositions.length],
+        num:oppNums[i],
+        call:"",
+        hair:shuffle(["hair-short","hair-curly","hair-band","hair-top","hair-shaved"])[0],
+        sleeve:i%2 ? "one" : "long",
+        boots:shuffle(["bootDark","bootWhite","bootDots","bootSplit","bootStripes"])[0],
+        cue:"diamond crest",
+        x:pt.x,
+        y:pt.y,
+        kit:clash.opp.kit,
+        kit2:clash.opp.kit2,
+        trim:clash.opp.trim,
+        sock:clash.opp.sock,
+        pattern:["halves","diag","stripe"][i%3],
+        bootColor:i%2 ? "#141414" : "#f2f2f2"
+      });
+    }
+  }
+
+  return {main, clash, target, choices:shuffle(choices), totalPlayers};
+}
+
+function updateHud(){
+  const mode=modes[state.mode];
+  $("levelTxt").textContent = `${Math.min(state.level,mode.levels)} / ${mode.levels}`;
+  $("playersTxt").textContent = state.current ? state.current.totalPlayers : 1;
+  $("scoreTxt").textContent = state.score;
+  $("accTxt").textContent = (state.attempts ? Math.round(state.correct/state.attempts*100) : 100) + "%";
+  $("posTxt").textContent = state.position;
+}
+
+function nextLevel(){
+  const mode=modes[state.mode];
+  clearInterval(state.timer);
+  state.locked=false;
+  $("result").className="result";
+  $("result").innerHTML="";
+
+  if(state.level >= mode.levels){
+    finish();
+    return;
+  }
+
+  state.level++;
+  clearPitch();
+  const s = makeScenario();
+  state.current=s;
+  updateHud();
+
+  const main = s.main;
+  line({x:main.x,y:main.y},{x:s.target.x,y:s.target.y},true);
+
+  player({
+    main:true,
+    team:true,
+    position:state.position,
+    num:12,
+    call:"",
+    hair:"hair-short",
+    sleeve:"long",
+    boots:"bootStripes",
+    x:main.x,
+    y:main.y,
+    kit:s.clash.team.kit,
+    kit2:s.clash.team.kit2,
+    trim:s.clash.team.trim,
+    sock:s.clash.team.sock,
+    pattern:"diag",
+    bootColor:"#fff"
+  });
+  ball(main);
+
+  s.choices.forEach(player);
+
+  const d=s.target;
+  $("smallInstruction").textContent = "PASS TO";
+  $("bigInstruction").textContent = "#" + d.num;
+  $("simpleClue").textContent = `${d.position} • ${d.call}`;
+  $("cueOne").textContent = d.cue;
+  $("cueTwo").textContent = "Round crest";
+  startTimer();
+}
+
+function startTimer(){
+  const mode=modes[state.mode];
+  state.deadline=performance.now()+mode.seconds*1000;
+  $("timeTxt").textContent=mode.seconds.toFixed(1)+"s";
+  $("pressureFill").style.transform="scaleX(1)";
+  state.timer=setInterval(()=>{
+    const left=Math.max(0,state.deadline-performance.now());
+    const pct=left/(mode.seconds*1000);
+    $("pressureFill").style.transform=`scaleX(${pct})`;
+    $("timeTxt").textContent=(left/1000).toFixed(1)+"s";
+    if(left<=0){
+      clearInterval(state.timer);
+      if(!state.locked) timeout();
+    }
+  },60);
+}
+
+function lock(){
+  document.querySelectorAll(".player.option").forEach(e=>e.classList.add("disabled"));
+}
+
+function result(type,title,text){
+  const box=$("result");
+  box.className=`result show ${type}`;
+  box.innerHTML=`<h3>${title}</h3><p>${text}</p>`;
+}
+
+function choose(id){
+  if(state.locked) return;
+  state.locked=true;
+  clearInterval(state.timer);
+  lock();
+
+  const choice=state.current.choices.find(c=>c.choiceId===id);
+  const target=state.current.target;
+  const el=document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+  state.attempts++;
+
+  if(choice.target){
+    state.correct++;
+    const bonus=Math.max(0,Math.round((state.deadline-performance.now())/1000*5));
+    const pts=50+bonus;
+    state.score+=pts;
+    el.classList.add("correct");
+    result("good","Correct","You passed to #"+choice.num+". Great cue reading. +" + pts);
+  } else if(choice.team){
+    state.safeWrong++;
+    state.score+=8;
+    el.classList.add("safe");
+    document.querySelector(`[data-id="${CSS.escape(target.choiceId)}"]`).classList.add("correct");
+    result("warn","Teammate, but not the target","Good: same team. Improve: the instruction was #"+target.num+". +8");
+  } else {
+    state.turnovers++;
+    state.score=Math.max(0,state.score-10);
+    el.classList.add("wrong");
+    document.querySelector(`[data-id="${CSS.escape(target.choiceId)}"]`).classList.add("correct");
+    result("bad","Wrong team","That was opposition. Colour tricked you. Look for #"+target.num+" first. -10");
+  }
+
+  updateHud();
+  setTimeout(nextLevel,1500);
+}
+
+function timeout(){
+  state.locked=true;
+  state.attempts++;
+  state.timeouts++;
+  state.score=Math.max(0,state.score-5);
+  lock();
+  const target=state.current.target;
+  const el=document.querySelector(`[data-id="${CSS.escape(target.choiceId)}"]`);
+  if(el) el.classList.add("correct");
+  result("bad","Too slow","The pass closed. Next time: number first, then position. -5");
+  updateHud();
+  setTimeout(nextLevel,1500);
+}
+
+function finish(){
+  clearInterval(state.timer);
+  show("end");
+  const acc = state.attempts ? Math.round(state.correct/state.attempts*100) : 0;
+  let grade="C", summary="Keep training";
+  if(acc>=90 && state.turnovers===0){grade="A+"; summary="Elite cue reading"}
+  else if(acc>=80){grade="A"; summary="Great cue reading"}
+  else if(acc>=65){grade="B"; summary="Good progress"}
+
+  $("gradeTxt").textContent=grade;
+  $("summaryTxt").textContent=summary;
+
+  const old=Number(localStorage.getItem("n12_simple_best")||0);
+  if(state.score>old) localStorage.setItem("n12_simple_best",String(state.score));
+  best();
+
+  $("feedback").innerHTML = `
+    <div class="fb"><b>Score: ${state.score}</b><span>${state.correct} correct passes from ${state.attempts} attempts. Accuracy: ${acc}%.</span></div>
+    <div class="fb"><b>Main skill</b><span>Read number first. Then position, voice, boots, hair, sleeves and crest. Do not trust similar kit colour alone.</span></div>
+    <div class="fb"><b>Turnovers</b><span>${state.turnovers} passes went to the opposition.</span></div>
+    <div class="fb"><b>Pressure</b><span>${state.timeouts} decisions were too slow.</span></div>
+  `;
+}
+
+$("startBtn").onclick=startGame;
+$("skipBtn").onclick=()=>{ if(!state.locked){ state.score=Math.max(0,state.score-3); nextLevel(); } };
+$("quitBtn").onclick=finish;
+$("againBtn").onclick=startGame;
+$("setupBtn").onclick=()=>{ clearInterval(state.timer); show("start"); };
+
+renderSetup();
+best();
+</script>
+</body>
+</html>
