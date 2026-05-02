@@ -401,6 +401,72 @@
   body.playing .stat span{font-size:.48rem;}
 }
 
+
+/* FINAL MOBILE + NO OVERLAP PATCH */
+@media (max-width:760px){
+  body.playing .simplePanel:nth-of-type(3){
+    display:none !important;
+  }
+
+  body.playing .pitch{
+    width:min(98vw, calc((100svh - 104px) * .642857)) !important;
+    height:min(calc(100svh - 104px), calc(98vw * 1.555)) !important;
+  }
+
+  body.playing .instruction{
+    padding:4px 6px !important;
+  }
+
+  body.playing .instruction .target{
+    font-size:clamp(1.55rem,10vw,2.35rem) !important;
+  }
+
+  body.playing .miniCue{
+    display:none !important;
+  }
+
+  body.playing .simplePanel{
+    padding:4px 6px !important;
+  }
+
+  body.playing .result p{
+    display:none !important;
+  }
+
+  body.playing .player{
+    width:clamp(34px,9.2vw,43px) !important;
+    min-height:54px !important;
+  }
+
+  body.playing .player.main{
+    width:clamp(39px,10.4vw,49px) !important;
+  }
+
+  body.playing .tag{
+    font-size:.42rem !important;
+  }
+
+  body.playing .body{
+    width:29px !important;
+    height:32px !important;
+  }
+
+  body.playing .main .body{
+    width:34px !important;
+    height:37px !important;
+  }
+}
+
+@media (max-width:390px){
+  body.playing .pitch{
+    width:min(99vw, calc((100svh - 92px) * .642857)) !important;
+    height:min(calc(100svh - 92px), calc(99vw * 1.555)) !important;
+  }
+  body.playing .instruction .clue{
+    font-size:.66rem !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -706,15 +772,46 @@ function player(data){
   return e;
 }
 
+function mobilePlay(){
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function minGapForLevel(){
+  if(mobilePlay()) return 19;
+  return 15;
+}
+
 function place(base, used, jitter=8){
-  for(let i=0;i<80;i++){
-    const p = {x:clamp(base.x + rand(-jitter,jitter), 10, 90), y:clamp(base.y + rand(-jitter,jitter), 9, 91)};
-    if(used.every(u=>dist(p,u)>13)) return p;
+  const minGap = minGapForLevel();
+
+  for(let i=0;i<220;i++){
+    const spread = jitter + (i > 80 ? 8 : 0) + (i > 150 ? 12 : 0);
+    const p = {
+      x:clamp(base.x + rand(-spread,spread), 9, 91),
+      y:clamp(base.y + rand(-spread,spread), 9, 91)
+    };
+    if(used.every(u=>dist(p,u)>minGap)) return p;
   }
-  return {x:clamp(base.x + rand(-12,12), 10, 90), y:clamp(base.y + rand(-12,12), 9, 91)};
+
+  const fallbackSpots = [
+    {x:18,y:24},{x:50,y:22},{x:82,y:24},
+    {x:18,y:40},{x:50,y:42},{x:82,y:40},
+    {x:18,y:58},{x:50,y:60},{x:82,y:58},
+    {x:18,y:76},{x:50,y:78},{x:82,y:76}
+  ];
+
+  const free = fallbackSpots
+    .filter(p => used.every(u=>dist(p,u)>minGap-2))
+    .sort((a,b)=>dist(a,base)-dist(b,base));
+
+  return free[0] || {
+    x:clamp(base.x + rand(-20,20), 10, 90),
+    y:clamp(base.y + rand(-20,20), 10, 90)
+  };
 }
 
 function playerCountForLevel(level){
+  if(mobilePlay()) return Math.min(6, level);
   return Math.min(8, level);
 }
 
@@ -725,9 +822,9 @@ function makeScenario(){
   const targetBase = pos(targetId);
   const clash = clashes[state.clash];
   const totalPlayers = playerCountForLevel(state.level);
-
   const used = [main];
-  const targetPlace = place(targetBase, used, 4);
+
+  const targetPlace = place(targetBase, used, mobilePlay() ? 6 : 4);
   used.push(targetPlace);
 
   const target = {
@@ -750,14 +847,22 @@ function makeScenario(){
   const otherTeam = valid.slice(1);
   let nextTeamIndex = 0;
   const oppNums = shuffle([2,3,4,5,6,7,8,9,10,11,14,15,16,17]);
-  const allOtherPositions = shuffle(positions.map(p=>p.id).filter(id=>id!==state.position && id!==targetId));
+
+  const fallbackPositions = mobilePlay()
+    ? [
+        {id:"ST",x:50,y:20},{id:"LW",x:18,y:32},{id:"RW",x:82,y:32},
+        {id:"CAM",x:50,y:42},{id:"CM",x:20,y:55},{id:"CM",x:80,y:55},
+        {id:"LCB",x:30,y:72},{id:"RCB",x:70,y:72},{id:"GK",x:50,y:88}
+      ]
+    : positions;
 
   for(let i=1;i<totalPlayers;i++){
-    const makeTeam = i >= 2 && i % 3 === 0 && otherTeam[nextTeamIndex];
+    const makeTeam = i >= 3 && i % 3 === 0 && otherTeam[nextTeamIndex];
+
     if(makeTeam){
       const id = otherTeam[nextTeamIndex++];
       const base = pos(id);
-      const pt = place(base, used, 5);
+      const pt = place(base, used, mobilePlay() ? 9 : 5);
       used.push(pt);
       choices.push({
         choiceId:"team_"+id+"_"+i,
@@ -775,15 +880,14 @@ function makeScenario(){
         bootColor:i%2 ? "#111" : "#f2f2f2"
       });
     } else {
-      const nearTarget = i===1;
-      const base = nearTarget ? {x:target.x + rand(-7,7), y:target.y + rand(-7,7)} : pos(allOtherPositions[i % allOtherPositions.length]);
-      const pt = place(base, used, nearTarget?5:8);
+      const base = fallbackPositions[i % fallbackPositions.length];
+      const pt = place(base, used, mobilePlay() ? 10 : 8);
       used.push(pt);
       choices.push({
         choiceId:"opp_"+i,
         team:false,
         target:false,
-        position:allOtherPositions[i % allOtherPositions.length],
+        position:base.id || "OPP",
         num:oppNums[i],
         call:"",
         hair:shuffle(["hair-short","hair-curly","hair-band","hair-top","hair-shaved"])[0],
